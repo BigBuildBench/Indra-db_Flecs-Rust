@@ -1,0 +1,101 @@
+name: CI
+
+env:
+  # When changing this, also update the `rust-version` in the workspace `Cargo.toml`
+  RUST_MIN_VER: "1.79"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  rustfmt:
+    runs-on: ubuntu-latest
+    name: cargo fmt
+    steps:
+      - uses: actions/checkout@v4
+      - name: install stable toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rustfmt
+      - name: cargo fmt
+        run: cargo fmt --all --check
+
+  typos:
+    runs-on: ubuntu-latest
+    name: typos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crate-ci/typos@master
+
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-13, macos-14, ubuntu-22.04, windows-2022]
+    name: cargo clippy + test
+    steps:
+      - uses: actions/checkout@v4
+      - name: install stable toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: clippy
+      - name: cargo clippy
+        run: cargo clippy --all-targets --workspace -- -D warnings
+      - name: cargo test
+        run: cargo test --workspace
+      - name: cargo test release
+        run: cargo test --workspace --release
+
+  build-ios:
+    runs-on: macos-latest
+    name: cargo build + clippy (iOS)
+    env:
+        RUSTFLAGS: -Dwarnings
+    steps:
+      - uses: actions/checkout@v4
+      - name: install stable toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: clippy
+          targets: aarch64-apple-ios
+      - name: cargo build
+        run: cargo build --target aarch64-apple-ios --all-targets --workspace
+      - name: cargo clippy
+        run: cargo clippy --target aarch64-apple-ios --all-targets --workspace
+
+  build-msrv:
+    runs-on: ubuntu-latest
+    name: cargo build (MSRV)
+    env:
+        RUSTFLAGS: -Dwarnings
+    steps:
+      - uses: actions/checkout@v4
+      - name: install MSRV toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_MIN_VER }}
+      - name: cargo build
+        run: cargo build
+
+  build-doc:
+    name: cargo docs-rs
+    runs-on: ubuntu-22.04
+    env:
+      RUSTDOCFLAGS: -Dwarnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+      - uses: dtolnay/install@cargo-docs-rs
+      - run: cargo docs-rs -p flecs_ecs
+      - run: cargo docs-rs -p flecs_ecs_derive

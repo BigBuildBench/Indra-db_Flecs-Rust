@@ -1,0 +1,27 @@
+[package]
+name = "flecs_ecs_derive"
+version = "0.1.0"
+edition.workspace = true
+license = "MIT"
+repository.workspace = true
+description = "A procedural macro crate for the Flecs ECS library."
+rust-version.workspace = true
+
+[lib]
+proc-macro = true
+name = "flecs_ecs_derive"
+
+[lints]
+workspace = true
+
+[dependencies]
+
+[package.metadata.docs.rs]
+rustdoc-args = [ "-Zunstable-options", "--generate-link-to-definition"]
+cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
+
+[features]
+
+flecs_meta = []
+
+default = []

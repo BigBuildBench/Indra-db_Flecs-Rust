@@ -1,0 +1,32 @@
+[workspace]
+members = ["flecs_ecs", "flecs_ecs_derive", "flecs_ecs_sys"]
+resolver = "2"
+
+exclude = [
+    "flecs_ecs_test"
+] 
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Indra-db/Flecs-Rust"
+# When changing this, update the CI as well.
+rust-version = "1.79"
+
+[workspace.lints]
+clippy.doc_markdown = "warn"
+clippy.float_cmp = "warn"
+clippy.float_cmp_const = "warn"
+clippy.print_stderr = "warn"
+clippy.print_stdout = "warn"
+clippy.semicolon_if_nothing_returned = "warn"
+rust.unused_lifetimes = "warn"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3

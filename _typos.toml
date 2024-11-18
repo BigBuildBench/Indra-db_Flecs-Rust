@@ -1,0 +1,9 @@
+[files]
+extend-exclude = [
+  "flecs_ecs_sys/**/*",
+  "target/**/*",
+  "flecs_ecs/examples/flecs/z_ignore_test_snapshots/**/*",
+]
+
+[default.extend-words]
+fo = "fo"

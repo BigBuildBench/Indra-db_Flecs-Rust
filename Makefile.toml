@@ -1,0 +1,81 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt"]
+workspace = false
+
+[tasks.clean]
+command = "cargo"
+args = ["clean", "-p", "flecs_ecs"]
+workspace = false
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+workspace = false
+
+[tasks.test]
+command = "cargo"
+args = ["test", "-p", "flecs_ecs"]
+workspace = false
+ 
+[tasks.typos]
+command = "typos"
+workspace = false
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy", "--all-targets"]
+workspace = false
+
+[tasks.flecs]
+dependencies = [
+    "format",
+    "typos",
+    "clippy",
+    "build",
+    "test"
+]
+workspace = false
+
+[tasks.chmod]
+script = [
+    "chmod +x ${CARGO_MAKE_WORKING_DIRECTORY}/scripts"
+]
+workspace = false
+
+[tasks.filter_fbench]
+script = { file = "${CARGO_MAKE_WORKING_DIRECTORY}/scripts/filter_bench_log.sh", absolute_path = true }
+dependencies = ["chmod"]
+workspace = false
+
+[tasks.fbench]
+script = { file = "${CARGO_MAKE_WORKING_DIRECTORY}/scripts/fbench_log.sh", absolute_path = true }
+dependencies = ["chmod"]
+workspace = false
+
+# When updating this, see if any docs.rs configs in `Cargo.toml` files need updating.
+[tasks.fdocs]
+condition = { channels = ["nightly"] }
+env = { "RUSTDOCFLAGS" = "--cfg docsrs -Zunstable-options --generate-link-to-definition" }
+command = "cargo"
+args = ["doc", "-Zunstable-options", "-Zrustdoc-scrape-examples", "${@}"]
+workspace = false
+
+[tasks.asan-macos]
+condition = { channels = ["nightly"] }
+env = { CC = "/opt/homebrew/opt/llvm/bin/clang", CFLAGS = "-fsanitize=address", RUSTFLAGS = "-Zsanitizer=address -Clink-arg=-fuse-ld=/opt/homebrew/opt/llvm/bin/ld64.lld" }
+command = "cargo"
+args = ["test", "-Zbuild-std", "--target", "aarch64-apple-darwin", "--tests", "--", "--test-threads", "1"]
+workspace = false
+
+[tasks.fmt]
+description = "Format the code in the flecs_ecs project using cargo fmt with nightly"
+command = "rustup"
+args = ["run", "nightly", "cargo", "fmt", "--", "--config", "format_code_in_doc_comments=true"]
+
+
+
